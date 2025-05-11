@@ -1,0 +1,103 @@
+#include <iostream>
+#include <functional>
+#include <string>
+#include <fstream>
+
+#include "UI/Component/ImageButton.hpp"
+#include "UI/Component/Label.hpp"
+
+#include "Engine/GameEngine.hpp"
+#include "Engine/Point.hpp"
+#include "Engine/Resources.hpp"
+
+#include <allegro5/allegro_primitives.h>
+
+#include "LeaderboardScene.hpp"
+
+void LeaderboardScene::Initialize() {
+    al_draw_filled_rectangle(100, 100, 400, 200,
+        al_map_rgba(255, 255, 255, 255)
+    );
+
+    int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
+    int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
+
+    AddNewObject(new Engine::Label("enter your name", "pirulen.ttf", 40, halfW, halfH / 4 + 90, 255, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("press [enter] to save", "pirulen.ttf", 22, halfW-3, halfH / 4 + 340, 155, 255, 255, 125, 0.5, 0.5));
+
+    Engine::ImageButton *btn;
+    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 200, halfH * 3 / 2 - 50, 400, 100);
+    btn->SetOnClickCallback(std::bind(&LeaderboardScene::ReturnOnClick, this, 0));
+    AddNewControlObject(btn);
+    AddNewObject(new Engine::Label("Return", "pirulen.ttf", 48, halfW - 5, halfH * 3 / 2, 0, 0, 0, 255, 0.5, 0.5));
+}
+
+void LeaderboardScene::OnKeyDown(int keyCode) {
+    IScene::OnKeyDown(keyCode);
+    int length = strlen(al_keycode_to_name(keyCode));
+    if (keyCode == ALLEGRO_KEY_ENTER && !Name.empty()) {
+        tick = 180;
+    } else if (keyCode == ALLEGRO_KEY_BACKSPACE && !Name.empty()){
+        Name.pop_back();
+    } else if (length == 1 && Name.length() <= 17) {
+        Name += al_keycode_to_name(keyCode);
+    } else if (keyCode == ALLEGRO_KEY_SPACE && Name.length() <= 17) {
+        Name += " ";
+    } else if (keyCode == ALLEGRO_KEY_MINUS && Name.length() <= 17) {
+        Name += "-";
+    }
+}
+
+void LeaderboardScene::Update(float deltaTime) {
+    if (tick > 1) {
+        tick--;
+    }
+    else if (tick == 1) {
+        tick = 0;
+        //money = PlayScene::PlayScene::GetMoney();
+        ofs.open("../Resource/scoreboard.txt", std::ios_base::app);
+        if (ofs.is_open()) {
+            std::cout << "Successfully saved name: " << Name << std::endl;
+            ofs << Name << " ~ " << std::endl;
+            ofs.close();
+        } else {
+            std::cerr << "[ERROR] Could not open scoreboard.txt for writing!" << std::endl;
+        }
+
+        Engine::GameEngine::GetInstance().ChangeScene("start");
+    }
+}
+
+void LeaderboardScene::Draw() const {
+    IScene::Draw();
+    int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
+    int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
+
+    if (tick > 0) {
+        al_clear_to_color(al_map_rgb(0, 0, 0));
+        //al_draw_filled_rectangle(0, 0, Engine::GameEngine::GetInstance().GetScreenSize().x, Engine::GameEngine::GetInstance().GetScreenSize().y, al_map_rgba(0, 0, 0, 85));
+        ALLEGRO_FONT* font = Engine::Resources::GetInstance().GetFont("pirulen.ttf", 72).get();
+        al_draw_text(font, al_map_rgb(255, 255, 255), halfW - 5, halfH - 90, ALLEGRO_ALIGN_CENTER, "saved successfully!");
+
+        return;
+    }
+
+    // Draw white rectangle
+    al_draw_filled_rectangle(halfW - 350, halfH - 40 - 60, halfW + 350, halfH + 40 - 60,
+        al_map_rgba(255, 255, 255, 255)
+    );
+
+    ALLEGRO_FONT* font = Engine::Resources::GetInstance().GetFont("pirulen.ttf", 40).get();
+    al_draw_textf(
+        font, al_map_rgb(255,0,0), halfW, halfH - 85, ALLEGRO_ALIGN_CENTER, "%s" ,Name.c_str()
+    );
+}
+
+void LeaderboardScene::Terminate() {
+    IScene::Terminate();
+}
+
+void LeaderboardScene::ReturnOnClick(int stage) {
+    // Change to select scene.
+    Engine::GameEngine::GetInstance().ChangeScene("start");
+}
