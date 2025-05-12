@@ -17,6 +17,7 @@
 #include "Engine/LOG.hpp"
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
+#include "LeaderboardScene.hpp"
 
 #include <allegro5/allegro_primitives.h>
 
@@ -154,6 +155,7 @@ void PlayScene::Update(float deltaTime) {
                 delete imgTarget;
                 */
                 // Win.
+                LeaderboardScene::val = this->money;
                 Engine::GameEngine::GetInstance().ChangeScene("win");
             }
             continue;

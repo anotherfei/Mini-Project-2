@@ -1,0 +1,1 @@
+//std::ifstream inFile("../Resource/scoreboard.txt", std::ios_base::in);

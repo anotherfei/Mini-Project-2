@@ -14,6 +14,8 @@
 
 #include "LeaderboardScene.hpp"
 
+int LeaderboardScene::val = 0;
+
 void LeaderboardScene::Initialize() {
     al_draw_filled_rectangle(100, 100, 400, 200,
         al_map_rgba(255, 255, 255, 255)
@@ -39,11 +41,11 @@ void LeaderboardScene::OnKeyDown(int keyCode) {
         tick = 180;
     } else if (keyCode == ALLEGRO_KEY_BACKSPACE && !Name.empty()){
         Name.pop_back();
-    } else if (length == 1 && Name.length() <= 17) {
+    } else if (length == 1 && Name.length() <= maxChar) {
         Name += al_keycode_to_name(keyCode);
-    } else if (keyCode == ALLEGRO_KEY_SPACE && Name.length() <= 17) {
+    } else if (keyCode == ALLEGRO_KEY_SPACE && Name.length() <= maxChar) {
         Name += " ";
-    } else if (keyCode == ALLEGRO_KEY_MINUS && Name.length() <= 17) {
+    } else if (keyCode == ALLEGRO_KEY_MINUS && Name.length() <= maxChar) {
         Name += "-";
     }
 }
@@ -54,11 +56,15 @@ void LeaderboardScene::Update(float deltaTime) {
     }
     else if (tick == 1) {
         tick = 0;
-        //money = PlayScene::PlayScene::GetMoney();
+        setScore();
         ofs.open("../Resource/scoreboard.txt", std::ios_base::app);
         if (ofs.is_open()) {
             std::cout << "Successfully saved name: " << Name << std::endl;
-            ofs << Name << " ~ " << std::endl;
+            ofs
+            << Name << " ~ "
+            << score << " ~ "
+            << std::endl;
+
             ofs.close();
         } else {
             std::cerr << "[ERROR] Could not open scoreboard.txt for writing!" << std::endl;
@@ -87,9 +93,12 @@ void LeaderboardScene::Draw() const {
         al_map_rgba(255, 255, 255, 255)
     );
 
-    ALLEGRO_FONT* font = Engine::Resources::GetInstance().GetFont("pirulen.ttf", 40).get();
+    ALLEGRO_FONT* font = Engine::Resources::GetInstance().GetFont("pirulen.ttf", 35).get();
     al_draw_textf(
-        font, al_map_rgb(255,0,0), halfW, halfH - 85, ALLEGRO_ALIGN_CENTER, "%s" ,Name.c_str()
+        font, al_map_rgb(76, 64, 45),
+        halfW, halfH - 80,
+        ALLEGRO_ALIGN_CENTER,
+        "%s" ,Name.c_str()
     );
 }
 
