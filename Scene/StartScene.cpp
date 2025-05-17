@@ -28,6 +28,13 @@ void StartScene::Initialize() {
 
     AddNewObject(new Engine::Label("Tower Defense", "pirulen.ttf", 120, halfW, halfH / 3 + 50, 10, 255, 255, 255, 0.5, 0.5));
 
+    //AddNewObject(new Engine::Image("trophy.png", 60, h - 150, 85, 85));
+    btn = new Engine::ImageButton("trophy.png", "trophy.png", 60, h - 150, 85, 85);
+    btn->SetOnClickCallback(std::bind(&StartScene::TrophyOnClick, this, 0));
+    AddNewControlObject(btn);
+    AddNewObject(new Engine::Label("Scoreboard", "pirulen.ttf", 16, 60 + 43, h - 42, 220, 220, 220, 205, 0.5, 0.5));
+
+
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 200, halfH / 2 + 200, 400, 100);
     btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
     AddNewControlObject(btn);
@@ -46,4 +53,7 @@ void StartScene::PlayOnClick(int stage) {
 }
 void StartScene::SettingsOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("settings");
+}
+void StartScene::TrophyOnClick(int stage) {
+    Engine::GameEngine::GetInstance().ChangeScene("scoreboard");
 }

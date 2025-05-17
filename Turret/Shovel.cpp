@@ -11,12 +11,10 @@
 
 const int Shovel::Price = 0;
 Shovel::Shovel(float x, float y)
-    : Turret("play/shovel.png", "play/shovel.png", x, y, 200, Price, 0.5) {
-    // Move center downward, since we the turret head is slightly biased upward.
-    Anchor.y += 0.0f / GetBitmapHeight();
+    : Turret("play/shovel.png", "play/shovel.png", x, y, 0, Price, 0.5) {
+    Anchor.y += 0.0f;
 }
 
-void Shovel::CreateBullet()
-{
+void Shovel::CreateBullet() {
 
 }

@@ -1,15 +1,14 @@
 #ifndef LEADERBOARDSCENE_HPP
 #define LEADERBOARDSCENE_HPP
-#include "PlayScene.hpp"
 #include "Engine/IScene.hpp"
 
 class LeaderboardScene final : public Engine::IScene {
 private:
     std::ofstream ofs;
-    std::string Name;
+    std::string Name, dateNtime;
     int tick;
     int score;
-    const int maxChar = 12;
+    const int maxChar = 16;
 
 public:
     static int val;
@@ -19,7 +18,7 @@ public:
     void Update(float deltaTime) override;
     void Draw() const override;
     void Terminate() override;
-    void ReturnOnClick(int stage);
+    void DontSaveOnClick(int stage);
     void setScore(){score = val;}
 };
 

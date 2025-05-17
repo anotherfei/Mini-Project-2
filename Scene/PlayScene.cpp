@@ -254,64 +254,45 @@ void PlayScene::OnMouseMove(int mx, int my) {
 void PlayScene::OnMouseUp(int button, int mx, int my) {
     if (Pause) return;
 
-    if (shovel) {
-        IScene::OnMouseUp(button, mx, my);
-        if (!imgTarget->Visible)
-            return;
-        const int x = mx / BlockSize;
-        const int y = my / BlockSize;
-        if (button & 1) {
+    IScene::OnMouseUp(button, mx, my);
+    if (!imgTarget->Visible)
+        return;
+    const int x = mx / BlockSize;
+    const int y = my / BlockSize;
+    if (button & 1) {
+        if (shovel) {
+            // Remove turret
             if (mapState[y][x] == TILE_OCCUPIED) {
-                if (!preview)
-                    return;
-                // Check if not valid.
-                if (CheckSpaceValid(x, y)) {
-                    Engine::Sprite* sprite;
-                    if (!shovel)
-                        GroundEffectGroup->AddNewObject(sprite = new DirtyEffect(
-                            "play/target-invalid.png", 1, x * BlockSize + BlockSize / 2, y * BlockSize + BlockSize / 2));
-                    sprite->Rotation = 0;
-                    return;
+                // Find and remove the turret at this location
+                for (auto& obj : TowerGroup->GetObjects())
+                {
+                    Turret* turret = dynamic_cast<Turret*>(obj);
+                    if (turret && static_cast<int>(turret->Position.x / BlockSize) == x &&
+                        static_cast<int>(turret->Position.y / BlockSize) == y) {
+                        // Earn back half the price
+                        EarnMoney(turret->GetPrice() / 2);
+                        TowerGroup->RemoveObject(obj->GetObjectIterator());
+                        mapState[y][x] = TILE_DIRT;
+                        break;
+                        }
                 }
-                // Purchase.
-                EarnMoney(preview->GetPrice());
-                // Remove Preview.
-                preview->GetObjectIterator()->first = true;
-                UIGroup->RemoveObject(preview->GetObjectIterator());
-                // Construct real turret.
-                preview->Position.x = x * BlockSize + BlockSize / 2;
-                preview->Position.y = y * BlockSize + BlockSize / 2;
-                preview->Enabled = true;
-                preview->Preview = false;
-                preview->Tint = al_map_rgba(255, 255, 255, 255);
-                // To keep responding when paused.
-                preview->Update(0);
-                // Remove Preview.
-                preview = nullptr;
-
-                mapState[y][x] = TILE_DIRT;
-                OnMouseMove(mx, my);
-                shovel = false;
+                OnMouseMove(mx, my); // Update UI
+            }
+            else {
+                Engine::Sprite* sprite = new DirtyEffect("play/target-invalid.png", 1,
+                    x * BlockSize + BlockSize / 2, y * BlockSize + BlockSize / 2);
+                GroundEffectGroup->AddNewObject(sprite);
+                sprite->Rotation = 0;
             }
         }
-    }
-
-    else {
-        IScene::OnMouseUp(button, mx, my);
-        if (!imgTarget->Visible)
-            return;
-        const int x = mx / BlockSize;
-        const int y = my / BlockSize;
-        if (button & 1) {
-            if (mapState[y][x] != TILE_OCCUPIED) {
+        else {
+            if(mapState[y][x] != TILE_OCCUPIED) {
                 if (!preview)
                     return;
                 // Check if valid.
                 if (!CheckSpaceValid(x, y)) {
-                    Engine::Sprite* sprite;
-                    if (!shovel)
-                        GroundEffectGroup->AddNewObject(sprite = new DirtyEffect(
-                            "play/target-invalid.png", 1, x * BlockSize + BlockSize / 2, y * BlockSize + BlockSize / 2));
+                    Engine::Sprite *sprite;
+                    GroundEffectGroup->AddNewObject(sprite = new DirtyEffect("play/target-invalid.png", 1, x * BlockSize + BlockSize / 2, y * BlockSize + BlockSize / 2));
                     sprite->Rotation = 0;
                     return;
                 }
@@ -334,8 +315,6 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
 
                 mapState[y][x] = TILE_OCCUPIED;
                 OnMouseMove(mx, my);
-
-                shovel = false;
             }
         }
     }
@@ -446,24 +425,26 @@ void PlayScene::ConstructUI() {
     UIGroup->AddNewObject(new Engine::Label(std::string("Stage ") + std::to_string(MapId), "pirulen.ttf", 32, 1294, 0));
     UIGroup->AddNewObject(UIMoney = new Engine::Label(std::string("$") + std::to_string(money), "pirulen.ttf", 24, 1294, 48));
     UIGroup->AddNewObject(UILives = new Engine::Label(std::string("Life ") + std::to_string(lives), "pirulen.ttf", 24, 1294, 88));
+    UIGroup->AddNewObject(new Engine::Label(std::string("Tools"), "pirulen.ttf", 22, 1294, 480));
+    UIGroup->AddNewObject(new Engine::Label(std::string("Turrets"), "pirulen.ttf", 22, 1294, 195));
     TurretButton *btn;
     // Button 1
     btn = new TurretButton("play/floor.png", "play/dirt.png",
-                           Engine::Sprite("play/tower-base.png", 1294, 136, 0, 0, 0, 0),
-                           Engine::Sprite("play/turret-1.png", 1294, 136 - 8, 0, 0, 0, 0), 1294, 136, MachineGunTurret::Price);
+                           Engine::Sprite("play/tower-base.png", 1300, 236, 0, 0, 0, 0),
+                           Engine::Sprite("play/turret-1.png", 1300, 236 - 8, 0, 0, 0, 0), 1300, 236, MachineGunTurret::Price);
     // Reference: Class Member Function Pointer and std::bind.
     btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 0));
     UIGroup->AddNewControlObject(btn);
     // Button 2
     btn = new TurretButton("play/floor.png", "play/dirt.png",
-                           Engine::Sprite("play/tower-base.png", 1370, 136, 0, 0, 0, 0),
-                           Engine::Sprite("play/turret-2.png", 1370, 136 - 8, 0, 0, 0, 0), 1370, 136, LaserTurret::Price);
+                           Engine::Sprite("play/tower-base.png", 1380, 236, 0, 0, 0, 0),
+                           Engine::Sprite("play/turret-2.png", 1380, 236 - 8, 0, 0, 0, 0), 1380, 236, LaserTurret::Price);
     btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 1));
     UIGroup->AddNewControlObject(btn);
     // Button 3
     btn = new TurretButton("play/floor.png", "play/dirt.png",
-                           Engine::Sprite("play/shovel.png", 1294, 236, 0, 0, 0, 0),
-                           Engine::Sprite("play/shovel.png", 1294, 236, 0, 0, 0, 0), 1294, 236, Shovel::Price);
+                           Engine::Sprite("play/shovel.png", 1300, 520, 0, 0, 0, 0),
+                           Engine::Sprite("play/shovel.png", 1300, 520, 0, 0, 0, 0), 1300, 520, Shovel::Price);
     btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 2));
     UIGroup->AddNewControlObject(btn);
 
@@ -489,10 +470,14 @@ void PlayScene::ConstructUI() {
 void PlayScene::UIBtnClicked(int id) {
     if (preview)
         UIGroup->RemoveObject(preview->GetObjectIterator());
-    if (id == 0 && money >= MachineGunTurret::Price)
+    if (id == 0 && money >= MachineGunTurret::Price) {
         preview = new MachineGunTurret(0, 0);
-    else if (id == 1 && money >= LaserTurret::Price)
+        shovel = false;
+    }
+    else if (id == 1 && money >= LaserTurret::Price) {
         preview = new LaserTurret(0, 0);
+        shovel = false;
+    }
     else if (id == 2 && money >= Shovel::Price) {
         preview = new Shovel(0, 0);
         shovel = true;
