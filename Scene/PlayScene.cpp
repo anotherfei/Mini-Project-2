@@ -442,10 +442,16 @@ void PlayScene::ConstructUI() {
     btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 1));
     UIGroup->AddNewControlObject(btn);
     // Button 3
+    // btn = new TurretButton("play/floor.png", "play/dirt.png",
+    //                        Engine::Sprite("play/tower-base.png", 1460, 236, 0, 0, 0, 0),
+    //                        Engine::Sprite("play/turret-7.png", 1460, 236 - 8, 0, 0, 0, 0), 1460, 236, BeamTurret::Price);
+    // btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 2));
+    // UIGroup->AddNewControlObject(btn);
+    // Button 4
     btn = new TurretButton("play/floor.png", "play/dirt.png",
-                           Engine::Sprite("play/shovel.png", 1300, 520, 0, 0, 0, 0),
+                           Engine::Sprite("play/tool-base.png", 1300, 520, 0, 0, 0, 0),
                            Engine::Sprite("play/shovel.png", 1300, 520, 0, 0, 0, 0), 1300, 520, Shovel::Price);
-    btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 2));
+    btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 3));
     UIGroup->AddNewControlObject(btn);
 
     //Home Button
@@ -478,7 +484,11 @@ void PlayScene::UIBtnClicked(int id) {
         preview = new LaserTurret(0, 0);
         shovel = false;
     }
-    else if (id == 2 && money >= Shovel::Price) {
+    // else if (id == 2 && money >= BeamTurret::Price) {
+    //     preview = new BeamTurret(0, 0);
+    //     shovel = false;
+    // }
+    else if (id == 3 && money >= Shovel::Price) {
         preview = new Shovel(0, 0);
         shovel = true;
     }

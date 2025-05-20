@@ -5,14 +5,23 @@
 
 class ScoreboardScene final : public Engine::IScene {
 private:
+    struct saved {
+        std::string name;
+        int scores;
+        std::string date_n_time;
+    };
+
     std::ifstream ifs;
     std::string Name;
     int Page = 0;
     int MAXPAGES = 0;
     int List_per_Page = 8;
-    std::vector<std::pair<std::string, int>> Data;
-    std::vector<std::string> Time;
-    void sortData(int sortType);
+    std::vector<saved> Data;
+
+    Engine::Label *SortLabel;
+    std::string Stype = "Score";
+    int sortType = 0;
+    void sortData(int type);
 
 public:
     explicit ScoreboardScene() = default;
